@@ -14,6 +14,9 @@ __pycache__/
 # VS Code settings (optional)
 .vscode/
 
+# Data files
+data/
+
 # Model files and outputs
 models/
 outputs/
