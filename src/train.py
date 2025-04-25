@@ -12,11 +12,11 @@ def train(data_dir="data", epochs=50, batch_size=64):
     # Load data
     X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
-    # ❌ No augmentation for now — clean input only
+    # No augmentation
     train_datagen = ImageDataGenerator()
     val_datagen = ImageDataGenerator()
 
-    # Generators without augmentation
+    # Generators
     train_generator = train_datagen.flow(
         X_train, y_train, batch_size=batch_size, shuffle=True
     )
@@ -43,8 +43,8 @@ def train(data_dir="data", epochs=50, batch_size=64):
         monitor="val_accuracy", patience=10, restore_best_weights=True, verbose=1
     )
 
-    # Class weights to account for imbalance
-    class_weight = {0: 1.0, 1: 1.2}
+    # ✅ Adjusted class weights
+    class_weight = {0: 1.0, 1: 1.4}
 
     # Train model
     history = model.fit(
