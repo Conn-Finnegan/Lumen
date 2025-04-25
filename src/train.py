@@ -12,8 +12,14 @@ def train(data_dir="data", epochs=50, batch_size=64):
     # Load data
     X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
-    # No augmentation
-    train_datagen = ImageDataGenerator()
+    # ✅ Light augmentation to prevent overfitting
+    train_datagen = ImageDataGenerator(
+        rotation_range=5,
+        zoom_range=0.05,
+        width_shift_range=0.02,
+        height_shift_range=0.02,
+    )
+
     val_datagen = ImageDataGenerator()
 
     # Generators
@@ -43,8 +49,8 @@ def train(data_dir="data", epochs=50, batch_size=64):
         monitor="val_accuracy", patience=10, restore_best_weights=True, verbose=1
     )
 
-    # ✅ Adjusted class weights
-    class_weight = {0: 1.0, 1: 1.4}
+    # ✅ Moderated class weights
+    class_weight = {0: 1.0, 1: 1.25}
 
     # Train model
     history = model.fit(
