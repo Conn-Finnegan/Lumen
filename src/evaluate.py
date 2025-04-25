@@ -12,8 +12,8 @@ def evaluate_model(model_path, data_dir):
     # Load model
     model = load_model(model_path)
 
-    # Load validation data
-    _, X_val, _, y_val = load_data(data_dir=data_dir)
+    # ✅ Load full dataset but only use validation set
+    X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
     # Predict
     y_pred_probs = model.predict(X_val, verbose=1)

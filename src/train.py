@@ -9,35 +9,28 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
 def train(data_dir="data", epochs=50, batch_size=64):
-    # Load raw data
+    # Load data
     X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
-    # Data augmentation for training
-    train_datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        zoom_range=0.1,
-        horizontal_flip=True,
-        brightness_range=[0.8, 1.2],
-    )
-
-    # No augmentation for validation
+    # ❌ No augmentation for now — clean input only
+    train_datagen = ImageDataGenerator()
     val_datagen = ImageDataGenerator()
 
-    # Create generators
-    train_generator = train_datagen.flow(X_train, y_train, batch_size=batch_size)
-    val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
+    # Generators without augmentation
+    train_generator = train_datagen.flow(
+        X_train, y_train, batch_size=batch_size, shuffle=True
+    )
+
+    val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size, shuffle=False)
 
     # Build model
     model = build_model(input_shape=(50, 50, 3))
 
-    # Create versioned model save path
+    # Timestamped model saving
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     save_filename = f"cancer_classifier_{timestamp}.keras"
     save_path = os.path.join("models", save_filename)
 
-    # Ensure output folders exist
     os.makedirs("models", exist_ok=True)
     os.makedirs("outputs", exist_ok=True)
 
@@ -47,13 +40,13 @@ def train(data_dir="data", epochs=50, batch_size=64):
     )
 
     early_stop = EarlyStopping(
-        monitor="val_loss", patience=5, restore_best_weights=True, verbose=1
+        monitor="val_accuracy", patience=10, restore_best_weights=True, verbose=1
     )
 
-    # Class weights
-    class_weight = {0: 1.0, 1: 1.5}
+    # Class weights to account for imbalance
+    class_weight = {0: 1.0, 1: 1.2}
 
-    # Train model using data generators
+    # Train model
     history = model.fit(
         train_generator,
         validation_data=val_generator,
@@ -84,15 +77,15 @@ def train(data_dir="data", epochs=50, batch_size=64):
     plt.ylabel("Loss")
     plt.legend()
 
-    # Save plot with timestamp
+    # Save plot
     plot_path = f"outputs/training_plot_{timestamp}.png"
     plt.tight_layout()
     plt.savefig(plot_path)
     plt.show()
 
     print(f"✅ Training complete.")
-    print(f"📦 Best model saved to: {save_path}")
-    print(f"📈 Training plot saved to: {plot_path}")
+    print(f"📦 Model saved to: {save_path}")
+    print(f"📈 Plot saved to: {plot_path}")
 
 
 if __name__ == "__main__":
