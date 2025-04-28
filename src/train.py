@@ -1,19 +1,19 @@
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime
-from load_data import load_data
 from model import build_model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-def train(data_dir="data", epochs=50, batch_size=64):
-    # Load data
-    X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
+def train(data_dir="data", epochs=50, batch_size=32):
+    # Paths
+    train_dir = os.path.join(data_dir, "train")
+    val_dir = os.path.join(data_dir, "val")
 
-    # Light Data augmentation for training
+    # Image generators
     train_datagen = ImageDataGenerator(
+        rescale=1.0 / 255,
         rotation_range=15,
         width_shift_range=0.05,
         height_shift_range=0.05,
@@ -22,16 +22,27 @@ def train(data_dir="data", epochs=50, batch_size=64):
         brightness_range=[0.9, 1.1],
     )
 
-    val_datagen = ImageDataGenerator()
+    val_datagen = ImageDataGenerator(rescale=1.0 / 255)
 
-    # Create generators
-    train_generator = train_datagen.flow(
-        X_train, y_train, batch_size=batch_size, shuffle=True
+    # Load data from folders dynamically
+    train_generator = train_datagen.flow_from_directory(
+        train_dir,
+        target_size=(96, 96),
+        batch_size=batch_size,
+        class_mode="binary",
+        shuffle=True,
     )
-    val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size, shuffle=False)
+
+    val_generator = val_datagen.flow_from_directory(
+        val_dir,
+        target_size=(96, 96),
+        batch_size=batch_size,
+        class_mode="binary",
+        shuffle=False,
+    )
 
     # Build model
-    model = build_model(input_shape=(50, 50, 3))
+    model = build_model(input_shape=(96, 96, 3))
 
     # Timestamped model saving
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
@@ -50,15 +61,13 @@ def train(data_dir="data", epochs=50, batch_size=64):
         monitor="val_accuracy", patience=8, restore_best_weights=True, verbose=1
     )
 
-    # Class weights (still slightly favour cancerous)
+    # Class weights
     class_weight = {0: 1.0, 1: 1.3}
 
     # Train model
     history = model.fit(
         train_generator,
         validation_data=val_generator,
-        steps_per_epoch=len(train_generator),
-        validation_steps=len(val_generator),
         epochs=epochs,
         callbacks=[checkpoint, early_stop],
         class_weight=class_weight,
@@ -98,4 +107,4 @@ def train(data_dir="data", epochs=50, batch_size=64):
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(__file__))
     data_path = os.path.join(project_root, "data")
-    train(data_dir=data_path, epochs=50, batch_size=64)
+    train(data_dir=data_path, epochs=50, batch_size=32)

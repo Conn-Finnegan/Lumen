@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
-def load_data(data_dir="data", img_size=(50, 50), test_split=0.2):
+def load_data(data_dir="data", img_size=(96, 96), test_split=0.2):
     categories = ["non_cancerous", "cancerous"]
     data = []
     labels = []
