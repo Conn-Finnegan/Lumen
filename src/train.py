@@ -4,18 +4,19 @@ from datetime import datetime
 from load_data import load_data
 from model import build_model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-def train(data_dir="data", epochs=50, batch_size=32):
+def train(data_dir="data", epochs=50, batch_size=64):
     # Load data
     X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
-    # Data augmentation for training
+    # Light Data augmentation for training
     train_datagen = ImageDataGenerator(
-        rotation_range=20,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
+        rotation_range=15,
+        width_shift_range=0.05,
+        height_shift_range=0.05,
         zoom_range=0.1,
         horizontal_flip=True,
         brightness_range=[0.9, 1.1],
@@ -49,7 +50,7 @@ def train(data_dir="data", epochs=50, batch_size=32):
         monitor="val_accuracy", patience=8, restore_best_weights=True, verbose=1
     )
 
-    # Class weight to help minority class
+    # Class weights (still slightly favour cancerous)
     class_weight = {0: 1.0, 1: 1.3}
 
     # Train model
@@ -97,4 +98,4 @@ def train(data_dir="data", epochs=50, batch_size=32):
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(__file__))
     data_path = os.path.join(project_root, "data")
-    train(data_dir=data_path, epochs=50, batch_size=32)
+    train(data_dir=data_path, epochs=50, batch_size=64)

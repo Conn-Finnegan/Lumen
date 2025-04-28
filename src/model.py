@@ -20,7 +20,7 @@ def build_model(input_shape=(50, 50, 3)):
     # Block 1
     model.add(
         Conv2D(
-            32, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.001)
+            32, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.0001)
         )
     )
     model.add(BatchNormalization())
@@ -29,7 +29,7 @@ def build_model(input_shape=(50, 50, 3)):
     # Block 2
     model.add(
         Conv2D(
-            64, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.001)
+            64, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.0001)
         )
     )
     model.add(BatchNormalization())
@@ -38,34 +38,33 @@ def build_model(input_shape=(50, 50, 3)):
     # Block 3
     model.add(
         Conv2D(
-            128, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.001)
+            128,
+            (3, 3),
+            activation="relu",
+            padding="same",
+            kernel_regularizer=l2(0.0001),
         )
     )
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    # Block 4 (new deeper block)
+    # Block 4 (reduced from 5 blocks)
     model.add(
         Conv2D(
-            128, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.001)
+            128,
+            (3, 3),
+            activation="relu",
+            padding="same",
+            kernel_regularizer=l2(0.0001),
         )
     )
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    # Block 5 (extra depth)
-    model.add(
-        Conv2D(
-            256, (3, 3), activation="relu", padding="same", kernel_regularizer=l2(0.001)
-        )
-    )
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # Flatten and Dense Layers
+    # Flatten and Dense
     model.add(Flatten())
-    model.add(Dense(256, activation="relu", kernel_regularizer=l2(0.001)))
-    model.add(Dropout(0.4))
+    model.add(Dense(256, activation="relu", kernel_regularizer=l2(0.0001)))
+    model.add(Dropout(0.2))  # Reduced dropout
     model.add(Dense(1, activation="sigmoid"))
 
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
