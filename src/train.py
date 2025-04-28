@@ -4,29 +4,29 @@ from datetime import datetime
 from load_data import load_data
 from model import build_model
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
-from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-def train(data_dir="data", epochs=50, batch_size=64):
+def train(data_dir="data", epochs=50, batch_size=32):
     # Load data
     X_train, X_val, y_train, y_val = load_data(data_dir=data_dir)
 
-    # ✅ Light augmentation to prevent overfitting
+    # Data augmentation for training
     train_datagen = ImageDataGenerator(
-        rotation_range=5,
-        zoom_range=0.05,
-        width_shift_range=0.02,
-        height_shift_range=0.02,
+        rotation_range=20,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        zoom_range=0.1,
+        horizontal_flip=True,
+        brightness_range=[0.9, 1.1],
     )
 
     val_datagen = ImageDataGenerator()
 
-    # Generators
+    # Create generators
     train_generator = train_datagen.flow(
         X_train, y_train, batch_size=batch_size, shuffle=True
     )
-
     val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size, shuffle=False)
 
     # Build model
@@ -46,10 +46,10 @@ def train(data_dir="data", epochs=50, batch_size=64):
     )
 
     early_stop = EarlyStopping(
-        monitor="val_accuracy", patience=10, restore_best_weights=True, verbose=1
+        monitor="val_accuracy", patience=8, restore_best_weights=True, verbose=1
     )
 
-    # ✅ Moderated class weights
+    # Class weight to help minority class
     class_weight = {0: 1.0, 1: 1.3}
 
     # Train model
@@ -97,4 +97,4 @@ def train(data_dir="data", epochs=50, batch_size=64):
 if __name__ == "__main__":
     project_root = os.path.dirname(os.path.dirname(__file__))
     data_path = os.path.join(project_root, "data")
-    train(data_dir=data_path, epochs=50, batch_size=64)
+    train(data_dir=data_path, epochs=50, batch_size=32)
