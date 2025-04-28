@@ -50,7 +50,7 @@ def train(data_dir="data", epochs=50, batch_size=64):
     )
 
     # ✅ Moderated class weights
-    class_weight = {0: 1.0, 1: 1.25}
+    class_weight = {0: 1.0, 1: 1.3}
 
     # Train model
     history = model.fit(
